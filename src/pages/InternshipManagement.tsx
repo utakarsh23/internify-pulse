@@ -32,86 +32,12 @@ const InternshipManagement = () => {
       const response = await internshipAPI.getAll();
       setInternships(response.data);
     } catch (error) {
-      // Mock data for demo
-      const mockInternships: Internship[] = [
-        {
-          id: '1',
-          title: 'Full-Stack Web Development Intern',
-          department: 'Engineering',
-          openings: 3,
-          duration: '3 months',
-          status: 'open',
-          description: 'Join Tech Solutions Pvt Ltd as a Full-Stack Web Development Intern. Key responsibilities include developing new user-facing features, optimizing applications for maximum speed and scalability.',
-          responsibilities: [
-            'Develop new user-facing features',
-            'Optimize applications for maximum speed and scalability',
-            'Collaborate with designers and backend engineers'
-          ],
-          requirements: ['JavaScript', 'React', 'Node.js', 'MongoDB'],
-          skills: ['JavaScript', 'React', 'Node.js', 'MongoDB'],
-          stipend: 10000,
-          applicationDeadline: '2025-10-15',
-          applicantCount: 15
-        },
-        {
-          id: '2',
-          title: 'Mobile App Development Intern',
-          department: 'Product Engineering',
-          openings: 2,
-          duration: '4 months',
-          status: 'open',
-          description: 'Work on cutting-edge mobile applications using React Native and modern development practices.',
-          responsibilities: [
-            'Develop cross-platform mobile applications',
-            'Implement push notifications and real-time features',
-            'Work with React Native and Expo'
-          ],
-          requirements: ['React Native', 'JavaScript', 'Mobile Development'],
-          skills: ['React Native', 'JavaScript', 'TypeScript', 'Expo'],
-          stipend: 12000,
-          applicationDeadline: '2025-10-25',
-          applicantCount: 8
-        },
-        {
-          id: '3',
-          title: 'Backend Developer Intern',
-          department: 'Engineering',
-          openings: 2,
-          duration: '3 months',
-          status: 'closed',
-          description: 'Backend development intern to work on API development, database design, and server-side logic.',
-          responsibilities: [
-            'Design and implement RESTful APIs',
-            'Database design and optimization',
-            'Server deployment and monitoring'
-          ],
-          requirements: ['Node.js', 'Python', 'Database Design'],
-          skills: ['Node.js', 'Python', 'PostgreSQL', 'Docker'],
-          stipend: 11000,
-          applicationDeadline: '2025-09-30',
-          applicantCount: 22
-        },
-        {
-          id: '4',
-          title: 'Data Science Intern',
-          department: 'Analytics',
-          openings: 1,
-          duration: '6 months',
-          status: 'open',
-          description: 'Work with our data science team to analyze user behavior and improve product recommendations.',
-          responsibilities: [
-            'Analyze large datasets',
-            'Build machine learning models',
-            'Create data visualizations'
-          ],
-          requirements: ['Python', 'Machine Learning', 'SQL'],
-          skills: ['Python', 'Pandas', 'Scikit-learn', 'SQL'],
-          stipend: 15000,
-          applicationDeadline: '2025-11-01',
-          applicantCount: 12
-        }
-      ];
-      setInternships(mockInternships);
+      console.error('Error fetching internships:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch internships. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -142,42 +68,13 @@ const InternshipManagement = () => {
       const response = await internshipAPI.getApplicants(internship.id);
       setApplicants(response.data);
     } catch (error) {
-      // Mock applicants for demo
-      const mockApplicants: Applicant[] = [
-        {
-          id: '1',
-          name: 'Utkarsh Tripathi',
-          email: 'utkarsh.t@somaiya.edu',
-          resumeSummary: 'Backend developer with experience in Node.js and Python',
-          skills: ['Java', 'Python', 'JavaScript', 'Node.js', 'MongoDB'],
-          experience: ['Internship at XYZ Corp', 'Personal projects in web development'],
-          status: 'applied',
-          applicationDate: '2024-10-15',
-          matchScore: {
-            skillSimilarity: 48.4,
-            profileMatch: 82.5,
-            overallMatch: 67.0
-          },
-          documents: ['Resume.pdf']
-        },
-        {
-          id: '2',
-          name: 'Priya Sharma',
-          email: 'priya.sharma@email.com',
-          resumeSummary: 'Frontend developer passionate about React and user experience',
-          skills: ['React', 'JavaScript', 'CSS', 'HTML', 'TypeScript'],
-          experience: ['Frontend Developer at ABC Tech', 'Freelance web development'],
-          status: 'shortlisted',
-          applicationDate: '2024-10-12',
-          matchScore: {
-            skillSimilarity: 65.2,
-            profileMatch: 78.3,
-            overallMatch: 71.7
-          },
-          documents: ['Resume.pdf', 'Portfolio.pdf']
-        }
-      ];
-      setApplicants(mockApplicants);
+      console.error('Error fetching applicants:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch applicants. Please try again.",
+        variant: "destructive"
+      });
+      setApplicants([]);
     }
   };
 
@@ -190,18 +87,12 @@ const InternshipManagement = () => {
       });
       fetchInternships();
     } catch (error) {
+      console.error('Error closing applications:', error);
       toast({
-        title: "Success",
-        description: "Applications have been closed for this internship.",
+        title: "Error",
+        description: "Failed to close applications. Please try again.",
+        variant: "destructive"
       });
-      // Mock update for demo
-      setInternships(prev =>
-        prev.map(internship =>
-          internship.id === internshipId
-            ? { ...internship, status: 'closed' as const }
-            : internship
-        )
-      );
     }
   };
 
@@ -214,12 +105,12 @@ const InternshipManagement = () => {
       });
       fetchInternships();
     } catch (error) {
+      console.error('Error deleting internship:', error);
       toast({
-        title: "Success",
-        description: "The internship has been deleted.",
+        title: "Error",
+        description: "Failed to delete internship. Please try again.",
+        variant: "destructive"
       });
-      // Mock delete for demo
-      setInternships(prev => prev.filter(internship => internship.id !== internshipId));
     }
   };
 

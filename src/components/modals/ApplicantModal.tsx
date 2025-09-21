@@ -2,7 +2,8 @@ import { X, Mail, Calendar, FileText, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Applicant } from '@/services/api';
+import { Applicant, applicantAPI } from '@/services/api';
+import { useToast } from '@/hooks/use-toast';
 
 interface ApplicantModalProps {
   applicant: Applicant;
@@ -12,25 +13,43 @@ interface ApplicantModalProps {
 }
 
 const ApplicantModal = ({ applicant, isOpen, onClose, internshipId }: ApplicantModalProps) => {
+  const { toast } = useToast();
+  
   if (!isOpen) return null;
 
   const handleAccept = async () => {
     try {
-      // Call accept API
-      console.log('Accepting applicant:', applicant.id);
+      await applicantAPI.accept(internshipId, applicant.id);
+      toast({
+        title: "Application Accepted",
+        description: `${applicant.name}'s application has been accepted.`
+      });
       onClose();
     } catch (error) {
       console.error('Error accepting applicant:', error);
+      toast({
+        title: "Error",
+        description: "Failed to accept application. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
   const handleReject = async () => {
     try {
-      // Call reject API
-      console.log('Rejecting applicant:', applicant.id);
+      await applicantAPI.reject(internshipId, applicant.id);
+      toast({
+        title: "Application Rejected",
+        description: `${applicant.name}'s application has been rejected.`
+      });
       onClose();
     } catch (error) {
       console.error('Error rejecting applicant:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reject application. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 

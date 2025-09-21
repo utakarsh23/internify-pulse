@@ -25,19 +25,12 @@ const CompanyProfile = () => {
       setCompany(response.data);
       setEditForm(response.data);
     } catch (error) {
-      // Mock data for demo
-      const mockCompany: Company = {
-        id: '1',
-        name: 'Tech Solutions Pvt Ltd',
-        email: 'contact@techsolutions.com',
-        description: 'A leading technology company specializing in web development, mobile applications, and digital solutions. We foster innovation and provide cutting-edge solutions to businesses worldwide.',
-        industry: 'Technology',
-        website: 'https://techsolutions.com',
-        location: 'Bengaluru, Karnataka, India',
-        totalInternships: 15
-      };
-      setCompany(mockCompany);
-      setEditForm(mockCompany);
+      console.error('Error fetching company profile:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch company profile. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -63,12 +56,11 @@ const CompanyProfile = () => {
         description: "Your company profile has been successfully updated."
       });
     } catch (error) {
-      // Mock success for demo
-      setCompany(editForm as Company);
-      setIsEditing(false);
+      console.error('Error updating profile:', error);
       toast({
-        title: "Profile Updated",
-        description: "Your company profile has been successfully updated."
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive"
       });
     }
   };
