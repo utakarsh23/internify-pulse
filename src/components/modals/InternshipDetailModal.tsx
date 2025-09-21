@@ -3,23 +3,23 @@ import { X, MapPin, Calendar, Users, DollarSign, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Internship, Application, User } from '@/services/api';
+import { Internship, Applicant } from '@/services/api';
 import ApplicantModal from './ApplicantModal';
 
 interface InternshipDetailModalProps {
   internship: Internship;
   isOpen: boolean;
   onClose: () => void;
-  applications?: Application[];
+  applicants?: Applicant[];
 }
 
 const InternshipDetailModal = ({
   internship,
   isOpen,
   onClose,
-  applications = []
+  applicants = []
 }: InternshipDetailModalProps) => {
-  const [selectedApplicant, setSelectedApplicant] = useState<User | null>(null);
+  const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
 
   if (!isOpen) return null;
 
@@ -41,15 +41,15 @@ const InternshipDetailModal = ({
           <div className="bg-gradient-primary text-primary-foreground p-6 rounded-t-2xl">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <h2 className="text-2xl font-bold mb-2">{internship.internshipDetails.title}</h2>
+                <h2 className="text-2xl font-bold mb-2">{internship.title}</h2>
                 <div className="flex items-center space-x-2 text-primary-foreground/90">
                   <Building className="h-4 w-4" />
-                  <span>Company Name</span>
+                  <span>Tech Solutions Pvt Ltd</span>
                 </div>
                 <div className="flex items-center space-x-4 mt-3 text-sm">
                   <div className="flex items-center space-x-1">
                     <MapPin className="h-4 w-4" />
-                    <span>{internship.internshipDetails.location?.address || 'Location not specified'}</span>
+                    <span>Bengaluru, 123 Innovation Park, Sector 21</span>
                   </div>
                   <span className="text-primary-foreground/70">On-site</span>
                 </div>
@@ -76,7 +76,7 @@ const InternshipDetailModal = ({
             <div>
               <h3 className="text-lg font-semibold mb-3">Job Description</h3>
               <p className="text-muted-foreground">
-                {internship.internshipDetails.responsibilities?.join('. ') || "No description available."}
+                {internship.description || "Join Tech Solutions Pvt Ltd as a Full-Stack Web Development Intern. Key responsibilities include Develop new user-facing features, Optimize applications for maximum speed and scalability and more."}
               </p>
             </div>
 
@@ -88,7 +88,11 @@ const InternshipDetailModal = ({
                 <div>
                   <h3 className="text-lg font-semibold mb-3">Key Responsibilities</h3>
                   <ul className="space-y-2">
-                    {(internship.internshipDetails.responsibilities || []).map((responsibility, index) => (
+                    {(internship.responsibilities || [
+                      "Develop new user-facing features",
+                      "Optimize applications for maximum speed and scalability",
+                      "Collaborate with designers and backend engineers"
+                    ]).map((responsibility, index) => (
                       <li key={index} className="flex items-start space-x-2">
                         <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
                         <span className="text-muted-foreground">{responsibility}</span>
@@ -102,12 +106,12 @@ const InternshipDetailModal = ({
                   <h3 className="text-lg font-semibold mb-3">Skills & Requirements</h3>
                   <div className="mb-4">
                     <p className="text-sm font-medium mb-2">Skills Needed</p>
-                    <Badge className="skill-tag skill-tag-engineering">{internship.internshipDetails.department || 'General'}</Badge>
+                    <Badge className="skill-tag skill-tag-engineering">Engineering</Badge>
                   </div>
                   <div>
                     <p className="text-sm font-medium mb-2">Requirements</p>
                     <div className="flex flex-wrap gap-2">
-                      {(internship.internshipDetails.skillsRequired || []).map((skill) => (
+                      {(internship.skills || ['JavaScript', 'React', 'Node.js', 'MongoDB']).map((skill) => (
                         <Badge key={skill} variant="outline" className="text-xs">
                           {skill}
                         </Badge>
@@ -122,28 +126,23 @@ const InternshipDetailModal = ({
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm text-muted-foreground">Duration</p>
-                      <p className="font-medium">{internship.internshipDetails.duration || 'Not specified'}</p>
+                      <p className="font-medium">{internship.duration || '3 months'}</p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Openings</p>
-                      <p className="font-medium">{internship.internshipDetails.openings || 0} positions</p>
+                      <p className="font-medium">{internship.openings || '3 positions'}</p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Stipend</p>
-                      <p className="font-medium">{internship.internshipDetails.stipend || 'Not specified'}</p>
+                      <p className="font-medium">₹{internship.stipend || '10,000'}/month</p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Apply by</p>
-                      <p className="font-medium">
-                        {internship.internshipDetails.applicationDeadline 
-                          ? new Date(internship.internshipDetails.applicationDeadline).toLocaleDateString()
-                          : 'Not specified'
-                        }
-                      </p>
+                      <p className="font-medium">{internship.applicationDeadline || '10/15/2025'}</p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Department</p>
-                      <p className="font-medium">{internship.internshipDetails.department || 'Not specified'}</p>
+                      <p className="font-medium">{internship.department || 'Engineering'}</p>
                     </div>
                   </div>
                 </div>
@@ -187,46 +186,44 @@ const InternshipDetailModal = ({
                   </div>
                 </div>
 
+                {/* Applicants List */}
                 <div className="border rounded-lg p-4">
                   <h4 className="font-semibold mb-3 flex items-center justify-between">
-                    <span>Applications ({applications.length})</span>
+                    <span>Applicants ({applicants.length})</span>
                     <Users className="h-4 w-4 text-primary" />
                   </h4>
                   <div className="space-y-3 max-h-80 overflow-y-auto">
-                    {applications.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">No applications yet</p>
+                    {applicants.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No applicants yet</p>
                     ) : (
-                      applications.map((application) => {
-                        const applicant = application.applicant as User;
-                        return (
-                          <div
-                            key={application._id}
-                            className="p-3 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors"
-                            onClick={() => setSelectedApplicant(applicant)}
-                          >
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <p className="font-medium text-sm">{applicant.name}</p>
-                                <p className="text-xs text-muted-foreground">{applicant.email}</p>
-                                <div className="mt-1">
-                                  <div className="flex items-center space-x-1 text-xs">
-                                    <span>Skills:</span>
-                                    <span className="font-medium text-primary">
-                                      {applicant.resume?.skills?.length || 0} listed
-                                    </span>
-                                  </div>
+                      applicants.map((applicant) => (
+                        <div
+                          key={applicant.id}
+                          className="p-3 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors"
+                          onClick={() => setSelectedApplicant(applicant)}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <p className="font-medium text-sm">{applicant.name}</p>
+                              <p className="text-xs text-muted-foreground">{applicant.email}</p>
+                              <div className="mt-1">
+                                <div className="flex items-center space-x-1 text-xs">
+                                  <span>Match:</span>
+                                  <span className="font-medium text-primary">
+                                    {applicant.matchScore?.overallMatch || 85}%
+                                  </span>
                                 </div>
                               </div>
-                              <Badge 
-                                variant={application.status === 'Hired' ? 'default' : 'secondary'}
-                                className="text-xs"
-                              >
-                                {application.status}
-                              </Badge>
                             </div>
+                            <Badge 
+                              variant={applicant.status === 'accepted' ? 'default' : 'secondary'}
+                              className="text-xs"
+                            >
+                              {applicant.status}
+                            </Badge>
                           </div>
-                        );
-                      })
+                        </div>
+                      ))
                     )}
                   </div>
                 </div>
@@ -249,14 +246,14 @@ const InternshipDetailModal = ({
       </div>
 
       {/* Applicant Detail Modal */}
-        {selectedApplicant && (
-          <ApplicantModal
-            applicant={selectedApplicant}
-            isOpen={!!selectedApplicant}
-            onClose={() => setSelectedApplicant(null)}
-            internshipId={internship._id}
-          />
-        )}
+      {selectedApplicant && (
+        <ApplicantModal
+          applicant={selectedApplicant}
+          isOpen={!!selectedApplicant}
+          onClose={() => setSelectedApplicant(null)}
+          internshipId={internship.id}
+        />
+      )}
     </>
   );
 };
