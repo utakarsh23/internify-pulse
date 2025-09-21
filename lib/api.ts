@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { getSession } from 'next-auth/react';
 
 // API Base URL - should be configured via environment variables in production
-const API_BASE_URL = 'http://localhost:7470/company';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:7470/company';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -10,14 +11,36 @@ const api = axios.create({
   },
 });
 
-// Add auth token to requests if available
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('authToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+// Add auth token to requests
+api.interceptors.request.use(async (config) => {
+  // Try to get token from session first
+  const session = await getSession();
+  if (session?.accessToken) {
+    config.headers.Authorization = `Bearer ${session.accessToken}`;
+  } else {
+    // Fallback to localStorage for client-side requests
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
   }
   return config;
 });
+
+// Response interceptor for handling auth errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Clear auth data and redirect to login
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('authToken');
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Company Profile API
 export const companyAPI = {
