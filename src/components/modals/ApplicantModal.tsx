@@ -2,11 +2,11 @@ import { X, Mail, Calendar, FileText, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Applicant, applicantAPI } from '@/services/api';
+import { User, applicantAPI } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
 
 interface ApplicantModalProps {
-  applicant: Applicant;
+  applicant: User;
   isOpen: boolean;
   onClose: () => void;
   internshipId: string;
@@ -19,7 +19,7 @@ const ApplicantModal = ({ applicant, isOpen, onClose, internshipId }: ApplicantM
 
   const handleAccept = async () => {
     try {
-      await applicantAPI.accept(internshipId, applicant.id);
+      await applicantAPI.accept(internshipId, applicant._id);
       toast({
         title: "Application Accepted",
         description: `${applicant.name}'s application has been accepted.`
@@ -37,7 +37,7 @@ const ApplicantModal = ({ applicant, isOpen, onClose, internshipId }: ApplicantM
 
   const handleReject = async () => {
     try {
-      await applicantAPI.reject(internshipId, applicant.id);
+      await applicantAPI.reject(internshipId, applicant._id);
       toast({
         title: "Application Rejected",
         description: `${applicant.name}'s application has been rejected.`
@@ -91,7 +91,7 @@ const ApplicantModal = ({ applicant, isOpen, onClose, internshipId }: ApplicantM
           <div>
             <h3 className="text-lg font-semibold mb-3">About</h3>
             <p className="text-muted-foreground">
-              {applicant.resumeSummary || "Hey, it's Utkarsh, a backend developer."}
+              {applicant.about || "No description available."}
             </p>
           </div>
 
@@ -103,15 +103,7 @@ const ApplicantModal = ({ applicant, isOpen, onClose, internshipId }: ApplicantM
               <div>
                 <h3 className="text-lg font-semibold mb-3">Skills</h3>
                 <div className="flex flex-wrap gap-2">
-                  {(applicant.skills || [
-                    'Java', 'Python', 'C', 'Javascript', 'VS Code', 'IntelliJ',
-                    'Git', 'Github', 'Canva', 'Figma', 'Postman', 'MS Office',
-                    'Spring', 'SpringBoot', 'Flask', 'Node.js', 'Express.js',
-                    'MongoDB', 'Tkinter', 'Numpy', 'Computer Networks',
-                    'Arduino Programming', 'Frontend (Basics)', 'Data Structures And Algorithms',
-                    'GraphQL', 'gRPC', 'SKILL-X', '3s', 'cs', 'mibmibmib',
-                    'vsbr', 'jhsbjf', 'Backend Developer', 'backend Development'
-                  ]).map((skill) => (
+                  {(applicant.resume?.skills || []).map((skill) => (
                     <Badge key={skill} variant="outline" className="text-xs">
                       {skill}
                     </Badge>
@@ -123,12 +115,14 @@ const ApplicantModal = ({ applicant, isOpen, onClose, internshipId }: ApplicantM
               <div>
                 <h3 className="text-lg font-semibold mb-3">Experience</h3>
                 <div className="space-y-4">
-                  {(applicant.experience || []).length === 0 ? (
+                  {(applicant.experience?.internships || []).length === 0 ? (
                     <p className="text-muted-foreground">No experience listed</p>
                   ) : (
-                    applicant.experience.map((exp, index) => (
+                    applicant.experience.internships.map((exp, index) => (
                       <div key={index} className="border-l-2 border-primary/30 pl-4">
-                        <p className="font-medium">{exp}</p>
+                        <p className="font-medium">{exp.title} at {exp.company}</p>
+                        <p className="text-sm text-muted-foreground">{exp.duration}</p>
+                        <p className="text-sm text-muted-foreground">{exp.description}</p>
                       </div>
                     ))
                   )}
@@ -139,15 +133,17 @@ const ApplicantModal = ({ applicant, isOpen, onClose, internshipId }: ApplicantM
               <div>
                 <h3 className="text-lg font-semibold mb-3">Documents</h3>
                 <div className="space-y-2">
-                  {(applicant.documents || ['Resume.pdf']).map((doc, index) => (
-                    <div key={index} className="flex items-center space-x-2 p-2 border rounded-lg">
+                  {applicant.resumeDoc ? (
+                    <div className="flex items-center space-x-2 p-2 border rounded-lg">
                       <FileText className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">{doc}</span>
+                      <span className="text-sm">{applicant.resumeDoc.filename || 'Resume.pdf'}</span>
                       <Button variant="outline" size="sm" className="ml-auto">
                         View
                       </Button>
                     </div>
-                  ))}
+                  ) : (
+                    <p className="text-muted-foreground text-sm">No documents uploaded</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -163,30 +159,30 @@ const ApplicantModal = ({ applicant, isOpen, onClose, internshipId }: ApplicantM
                 <div className="space-y-3">
                   <div>
                     <div className="flex justify-between text-sm mb-1">
-                      <span>Skill Similarity</span>
+                      <span>Resume Skills Match</span>
                       <span className="font-medium text-blue-600">
-                        {applicant.matchScore?.skillSimilarity || 48.4}%
+                        {Math.round((applicant.resume?.skills?.length || 0) * 10)}%
                       </span>
                     </div>
-                    <Progress value={applicant.matchScore?.skillSimilarity || 48.4} className="h-2" />
+                    <Progress value={(applicant.resume?.skills?.length || 0) * 10} className="h-2" />
                   </div>
                   <div>
                     <div className="flex justify-between text-sm mb-1">
-                      <span>Profile Match</span>
+                      <span>Profile Completeness</span>
                       <span className="font-medium text-purple-600">
-                        {applicant.matchScore?.profileMatch || 82.5}%
+                        {applicant.about && applicant.resume?.skills?.length ? '85' : '45'}%
                       </span>
                     </div>
-                    <Progress value={applicant.matchScore?.profileMatch || 82.5} className="h-2" />
+                    <Progress value={applicant.about && applicant.resume?.skills?.length ? 85 : 45} className="h-2" />
                   </div>
                   <div>
                     <div className="flex justify-between text-sm mb-1">
                       <span>Overall Match</span>
                       <span className="font-medium text-orange-600">
-                        {applicant.matchScore?.overallMatch || 67.0}%
+                        {Math.round(((applicant.resume?.skills?.length || 0) * 5 + (applicant.about ? 40 : 20)) / 2)}%
                       </span>
                     </div>
-                    <Progress value={applicant.matchScore?.overallMatch || 67.0} className="h-2" />
+                    <Progress value={Math.round(((applicant.resume?.skills?.length || 0) * 5 + (applicant.about ? 40 : 20)) / 2)} className="h-2" />
                   </div>
                 </div>
               </div>
@@ -195,9 +191,9 @@ const ApplicantModal = ({ applicant, isOpen, onClose, internshipId }: ApplicantM
               <div className="border rounded-lg p-4">
                 <h4 className="font-semibold mb-3">Preferences</h4>
                 <div className="space-y-2 text-sm">
-                  <p><strong>Preferred Location:</strong> Remote / Pune</p>
-                  <p><strong>Looking For:</strong> Summer Internship 2025</p>
-                  <p><strong>Open to:</strong> Product, Strategy, Ops</p>
+                  <p><strong>Preferred Location:</strong> {applicant.residence?.city || 'Not specified'}</p>
+                  <p><strong>Field:</strong> {applicant.field || 'Not specified'}</p>
+                  <p><strong>Phone:</strong> {applicant.phoneNumber || 'Not provided'}</p>
                 </div>
               </div>
 
@@ -206,8 +202,8 @@ const ApplicantModal = ({ applicant, isOpen, onClose, internshipId }: ApplicantM
                 <h4 className="font-semibold mb-3">Contact</h4>
                 <div className="space-y-2 text-sm">
                   <p><strong>Email:</strong> {applicant.email}</p>
-                  <p><strong>LinkedIn:</strong> https://www.linkedin.com/in/tripathiutkarsh/</p>
-                  <p><strong>Website:</strong> https://github.com/utkarsh23</p>
+                  <p><strong>LinkedIn:</strong> {applicant.resume?.socialLinks?.linkedin || 'Not provided'}</p>
+                  <p><strong>GitHub:</strong> {applicant.resume?.socialLinks?.github || 'Not provided'}</p>
                 </div>
               </div>
 
@@ -215,7 +211,7 @@ const ApplicantModal = ({ applicant, isOpen, onClose, internshipId }: ApplicantM
               <div className="border rounded-lg p-4">
                 <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                   <Calendar className="h-4 w-4" />
-                  <span>Applied on {applicant.applicationDate || 'Oct 15, 2024'}</span>
+                  <span>Profile created {new Date().toLocaleDateString()}</span>
                 </div>
               </div>
             </div>
@@ -231,14 +227,12 @@ const ApplicantModal = ({ applicant, isOpen, onClose, internshipId }: ApplicantM
               <Button 
                 variant="destructive" 
                 onClick={handleReject}
-                disabled={applicant.status === 'rejected'}
               >
                 Reject
               </Button>
               <Button 
                 className="bg-gradient-primary" 
                 onClick={handleAccept}
-                disabled={applicant.status === 'accepted'}
               >
                 Accept Application
               </Button>

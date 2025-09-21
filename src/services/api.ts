@@ -43,50 +43,123 @@ export const applicantAPI = {
   reject: (internshipId: string, userId: string) => api.post(`/${internshipId}/reject/${userId}`),
 };
 
-// Types
+// Types based on MongoDB schemas
 export interface Company {
-  id: string;
+  _id: string;
   name: string;
   email: string;
-  description: string;
+  uniqueName: string;
+  description?: string;
   industry: string;
-  website: string;
+  website?: string;
   location: string;
-  totalInternships: number;
+  internships: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InternshipDetails {
+  title: string;
+  department?: string;
+  responsibilities: string[];
+  skillsRequired: string[];
+  openings?: number;
+  duration?: string;
+  applicationDeadline?: string;
+  startDate?: string;
+  location: {
+    address?: string;
+    pinCode?: number;
+    city?: string;
+  };
+  stipend?: string;
+}
+
+export interface Eligibility {
+  optional?: boolean;
+  highestLevelOfEducation?: string;
+  preferredDegrees?: string[];
+  graduationYearRange?: number[];
 }
 
 export interface Internship {
-  id: string;
-  title: string;
-  department: string;
-  openings: number;
-  duration: string;
-  status: 'open' | 'closed';
-  description: string;
-  responsibilities: string[];
-  requirements: string[];
-  skills: string[];
-  stipend: number;
-  applicationDeadline: string;
-  applicantCount: number;
+  _id: string;
+  internshipDetails: InternshipDetails;
+  eligibility?: Eligibility;
+  assignments: string[];
+  applications: string[];
+  exSkills: {
+    pastHired: string[];
+    currHired: string[];
+  };
+  currentInterns: string[];
+  status: boolean;
+  company: string;
+  sampleQuestions: string[];
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface Applicant {
-  id: string;
+export interface User {
+  _id: string;
+  username: string;
   name: string;
+  gender?: string;
   email: string;
-  resumeSummary: string;
-  skills: string[];
-  experience: string[];
-  status: 'applied' | 'shortlisted' | 'accepted' | 'rejected';
-  applicationDate: string;
-  matchScore: {
-    skillSimilarity: number;
-    profileMatch: number;
-    overallMatch: number;
+  avatar?: string;
+  field?: string;
+  phoneNumber?: string;
+  about?: string;
+  residence?: {
+    pin?: number;
+    city?: string;
+    state?: string;
   };
+  experience: {
+    internships: Array<{
+      title: string;
+      company: string;
+      duration: string;
+      description: string;
+    }>;
+  };
+  resume: {
+    skills: string[];
+    projects: string[];
+    certifications: string[];
+    socialLinks?: {
+      linkedin?: string;
+      github?: string;
+      website?: string;
+    };
+  };
+  internships: {
+    applications: string[];
+    pastInternships: string[];
+    currentInternship?: string;
+  };
+  resumeDoc?: {
+    filename?: string;
+    path?: string;
+    mimetype?: string;
+    size?: number;
+    uploadedAt?: string;
+  };
+}
+
+export interface Application {
+  _id: string;
+  internship: string | Internship;
+  applicant: string | User;
+  status: 'Submitted' | 'Under Review' | 'Shortlisted' | 'Rejected' | 'Hired';
+  quiz: Array<{
+    question: string;
+    answer: string;
+    status: string;
+  }>;
   documents: string[];
-  quizAnswers?: any;
+  appliedAt: string;
+  updatedAt: string;
 }
 
 export default api;

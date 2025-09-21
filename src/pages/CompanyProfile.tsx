@@ -22,8 +22,9 @@ const CompanyProfile = () => {
   const fetchCompanyProfile = async () => {
     try {
       const response = await companyAPI.getProfile();
-      setCompany(response.data);
-      setEditForm(response.data);
+      const companyData = response.data.company;
+      setCompany(companyData);
+      setEditForm(companyData);
     } catch (error) {
       console.error('Error fetching company profile:', error);
       toast({
@@ -48,8 +49,10 @@ const CompanyProfile = () => {
 
   const handleSave = async () => {
     try {
-      const response = await companyAPI.updateProfile(editForm);
-      setCompany(response.data);
+      await companyAPI.updateProfile(editForm);
+      // Refetch the profile to get updated data
+      const response = await companyAPI.getProfile();
+      setCompany(response.data.company);
       setIsEditing(false);
       toast({
         title: "Profile Updated",
@@ -253,7 +256,7 @@ const CompanyProfile = () => {
               <CardContent>
                 <div className="space-y-4">
                   <div className="text-center p-4 bg-accent rounded-lg">
-                    <div className="text-3xl font-bold text-primary">{company.totalInternships}</div>
+                    <div className="text-3xl font-bold text-primary">{company.internships?.length || 0}</div>
                     <div className="text-sm text-muted-foreground">Total Internships Posted</div>
                   </div>
                   <div className="grid grid-cols-2 gap-4 text-center">
